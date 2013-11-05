@@ -1,25 +1,25 @@
-/* 
- *              weupnp - Trivial upnp java library 
+/*
+ *              weupnp - Trivial upnp java library
  *
  * Copyright (C) 2008 Alessandro Bahgat Shehata, Daniele Castagna
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  * Alessandro Bahgat Shehata - ale dot bahgat at gmail dot com
  * Daniele Castagna - daniele dot castagna at gmail dot com
- * 
+ *
  */
 
 package org.bitlet.weupnp;
@@ -53,9 +53,8 @@ public class GatewayDeviceHandler extends DefaultHandler {
 
     /** state variables */
     private String currentElement;
-    private int level = 0;
     private short state = 0;
-    
+
     /**
      * Receive notification of the start of an element.
      *
@@ -81,7 +80,6 @@ public class GatewayDeviceHandler extends DefaultHandler {
     public void startElement(String uri, String localName, String qName,
             Attributes attributes) throws SAXException {
         currentElement = localName;
-        level++;
         if (state < 1 && "serviceList".compareTo(currentElement) == 0) {
             state = 1;
         }
@@ -112,7 +110,6 @@ public class GatewayDeviceHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         currentElement = "";
-        level--;
         if (localName.compareTo("service")==0){
             if (device.getServiceTypeCIF() != null &&
                     device.getServiceTypeCIF().compareTo("urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1") == 0)
@@ -177,8 +174,8 @@ public class GatewayDeviceHandler extends DefaultHandler {
                 device.setSCPDURL(new String(ch,start,length));
             else if( currentElement.compareTo( "deviceType") == 0 )
                 device.setDeviceType(new String(ch,start,length));
-            
+
         }
     }
-    
+
 }

@@ -1,29 +1,32 @@
-/* 
- *              weupnp - Trivial upnp java library 
+/*
+ *              weupnp - Trivial upnp java library
  *
  * Copyright (C) 2008 Alessandro Bahgat Shehata, Daniele Castagna
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- * 
+ *
  * Alessandro Bahgat Shehata - ale dot bahgat at gmail dot com
  * Daniele Castagna - daniele dot castagna at gmail dot com
- * 
+ *
  */
 package org.bitlet.weupnp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
@@ -32,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -51,7 +55,7 @@ public class GatewayDevice {
 	 * Receive timeout when requesting data from device
 	 */
     private static final int HTTP_RECEIVE_TIMEOUT = 7000;
-    
+
 	private String st;
     private String location;
     private String serviceType;
@@ -127,7 +131,7 @@ public class GatewayDevice {
 
         XMLReader parser = XMLReaderFactory.createXMLReader();
         parser.setContentHandler(new GatewayDeviceHandler(this));
-        parser.parse(new InputSource(urlConn.getInputStream()));
+        parse(parser, urlConn.getInputStream());
 
 
         /* fix urls */
@@ -148,6 +152,13 @@ public class GatewayDevice {
         controlURL = copyOrCatUrl(ipConDescURL, controlURL);
         controlURLCIF = copyOrCatUrl(ipConDescURL, controlURLCIF);
         presentationURL = copyOrCatUrl(ipConDescURL, presentationURL);
+    }
+
+    private static void parse(XMLReader parser, InputStream input) throws IOException, SAXException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        IOUtils.copy(input, output);
+        String xml = new String(output.toByteArray());
+        parser.parse(new InputSource(new ByteArrayInputStream(xml.trim().getBytes())));
     }
 
     /**
@@ -216,7 +227,7 @@ public class GatewayDevice {
         if (conn.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
             try {
                 // attempt to parse the error message
-                parser.parse(new InputSource(conn.getErrorStream()));
+                parse(parser, conn.getErrorStream());
             } catch (SAXException e) {
                 // ignore the exception
                 // FIXME We probably need to find a better way to return
@@ -225,7 +236,7 @@ public class GatewayDevice {
             conn.disconnect();
             return nameValue;
         } else {
-            parser.parse(new InputSource(conn.getInputStream()));
+            parse(parser, conn.getInputStream());
             conn.disconnect();
             return nameValue;
         }
@@ -455,9 +466,7 @@ public class GatewayDevice {
         args.put("NewRemoteHost", "");
         args.put("NewExternalPort", Integer.toString(externalPort));
         args.put("NewProtocol", protocol);
-        Map<String, String> nameValue = simpleUPnPcommand(controlURL,
-                serviceType, "DeletePortMapping", args);
-
+        simpleUPnPcommand(controlURL, serviceType, "DeletePortMapping", args);
         return true;
     }
 
