@@ -31,9 +31,10 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.xml.sax.InputSource;
@@ -51,12 +52,12 @@ import org.xml.sax.helpers.XMLReaderFactory;
  */
 public class GatewayDevice {
 
-	/**
-	 * Receive timeout when requesting data from device
-	 */
+    /**
+     * Receive timeout when requesting data from device
+     */
     private static final int HTTP_RECEIVE_TIMEOUT = 7000;
 
-	private String st;
+    private String st;
     private String location;
     private String serviceType;
     private String serviceTypeCIF;
@@ -177,8 +178,8 @@ public class GatewayDevice {
      * @throws IOException  on communication errors
      * @throws SAXException if errors occur while parsing the response
      */
-    public static Map<String, String> simpleUPnPcommand(String url,
-                                                        String service, String action, Map<String, String> args)
+    public static Map<String, String> simpleUPnPcommand(String url, String service,
+            String action, List<Argument> args)
             throws IOException, SAXException {
         String soapAction = "\"" + service + "#" + action + "\"";
         StringBuilder soapBody = new StringBuilder();
@@ -190,15 +191,11 @@ public class GatewayDevice {
                 "<SOAP-ENV:Body>" +
                 "<m:" + action + " xmlns:m=\"" + service + "\">");
 
-        if (args != null && args.size() > 0) {
-
-            Set<Map.Entry<String, String>> entrySet = args.entrySet();
-
-            for (Map.Entry<String, String> entry : entrySet) {
-                soapBody.append("<" + entry.getKey() + ">" + entry.getValue() +
-                        "</" + entry.getKey() + ">");
+        if (args != null) {
+            for (Argument argument : args) {
+                soapBody.append("<" + argument.getName() + ">" + argument.getValue() +
+                        "</" + argument.getName() + ">");
             }
-
         }
 
         soapBody.append("</m:" + action + ">");
@@ -302,15 +299,15 @@ public class GatewayDevice {
     public boolean addPortMapping(int externalPort, int internalPort,
                                   String internalClient, String protocol, String description)
             throws IOException, SAXException {
-        Map<String, String> args = new HashMap<String, String>();
-        args.put("NewRemoteHost", "");    // wildcard, any remote host matches
-        args.put("NewExternalPort", Integer.toString(externalPort));
-        args.put("NewProtocol", protocol);
-        args.put("NewInternalPort", Integer.toString(internalPort));
-        args.put("NewInternalClient", internalClient);
-        args.put("NewEnabled", Integer.toString(1));
-        args.put("NewPortMappingDescription", description);
-        args.put("NewLeaseDuration", Integer.toString(0));
+        List<Argument> args = new ArrayList<Argument>();
+        args.add(new Argument("NewRemoteHost", "")); // wildcard, any remote host matches
+        args.add(new Argument("NewExternalPort", Integer.toString(externalPort)));
+        args.add(new Argument("NewProtocol", protocol));
+        args.add(new Argument("NewInternalPort", Integer.toString(internalPort)));
+        args.add(new Argument("NewInternalClient", internalClient));
+        args.add(new Argument("NewEnabled", Integer.toString(1)));
+        args.add(new Argument("NewPortMappingDescription", description));
+        args.add(new Argument("NewLeaseDuration", Integer.toString(0)));
 
         Map<String, String> nameValue = simpleUPnPcommand(controlURL,
                 serviceType, "AddPortMapping", args);
@@ -345,10 +342,10 @@ public class GatewayDevice {
         portMappingEntry.setExternalPort(externalPort);
         portMappingEntry.setProtocol(protocol);
 
-        Map<String, String> args = new HashMap<String, String>();
-        args.put("NewRemoteHost", ""); // wildcard, any remote host matches
-        args.put("NewExternalPort", Integer.toString(externalPort));
-        args.put("NewProtocol", protocol);
+        List<Argument> args = new ArrayList<Argument>();
+        args.add(new Argument("NewRemoteHost", "")); // wildcard, any remote host matches
+        args.add(new Argument("NewExternalPort", Integer.toString(externalPort)));
+        args.add(new Argument("NewProtocol", protocol));
 
         Map<String, String> nameValue = simpleUPnPcommand(controlURL,
                 serviceType, "GetSpecificPortMappingEntry", args);
@@ -395,8 +392,9 @@ public class GatewayDevice {
     public boolean getGenericPortMappingEntry(int index,
                                               final PortMappingEntry portMappingEntry)
             throws IOException, SAXException {
-        Map<String, String> args = new HashMap<String, String>();
-        args.put("NewPortMappingIndex", Integer.toString(index));
+
+        List<Argument> args = new ArrayList<Argument>();
+        args.add(new Argument("NewPortMappingIndex", Integer.toString(index)));
 
         Map<String, String> nameValue = simpleUPnPcommand(controlURL,
                 serviceType, "GetGenericPortMappingEntry", args);
@@ -462,10 +460,10 @@ public class GatewayDevice {
      */
     public boolean deletePortMapping(int externalPort, String protocol)
             throws IOException, SAXException {
-        Map<String, String> args = new HashMap<String, String>();
-        args.put("NewRemoteHost", "");
-        args.put("NewExternalPort", Integer.toString(externalPort));
-        args.put("NewProtocol", protocol);
+        List<Argument> args = new ArrayList<Argument>();
+        args.add(new Argument("NewRemoteHost", ""));
+        args.add(new Argument("NewExternalPort", Integer.toString(externalPort)));
+        args.add(new Argument("NewProtocol", protocol));
         simpleUPnPcommand(controlURL, serviceType, "DeletePortMapping", args);
         return true;
     }
