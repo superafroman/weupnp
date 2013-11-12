@@ -3,7 +3,7 @@
     <groupId>org.bitlet</groupId>
     <artifactId>weupnp</artifactId>
     <packaging>jar</packaging>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.1.5</version>
     <name>weupnp</name>
     <url>https://github.com/bitletorg/weupnp</url>
     <build>
@@ -51,7 +51,7 @@
         <connection>scm:git:git@github.com:superafroman/weupnp.git</connection>
         <developerConnection>scm:git:git@github.com:superafroman/weupnp.git</developerConnection>
         <url>https://github.com/superafroman/weupnp</url>
-      <tag>HEAD</tag>
+      <tag>weupnp-0.1.5</tag>
   </scm>
     <licenses>
         <license>
